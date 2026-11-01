@@ -1,0 +1,238 @@
+{
+  "format": "ai-house-plan",
+  "schemaVersion": 1,
+  "id": "example-house",
+  "units": "m",
+  "coordinateSystem": {
+    "plane": "xz",
+    "up": "y"
+  },
+  "levels": [
+    {
+      "id": "level-1",
+      "name": "1階",
+      "elevation": 0,
+      "footprint": {
+        "reference": "exterior-wall-centerline",
+        "outline": [
+          [
+            0,
+            0
+          ],
+          [
+            6,
+            0
+          ],
+          [
+            6,
+            4
+          ],
+          [
+            0,
+            4
+          ]
+        ]
+      },
+      "walls": [
+        {
+          "id": "w1",
+          "start": [
+            0,
+            0
+          ],
+          "end": [
+            6,
+            0
+          ],
+          "height": 2.7,
+          "thickness": 0.16
+        },
+        {
+          "id": "w2",
+          "start": [
+            6,
+            0
+          ],
+          "end": [
+            6,
+            4
+          ],
+          "height": 2.7,
+          "thickness": 0.16
+        },
+        {
+          "id": "w3",
+          "start": [
+            6,
+            4
+          ],
+          "end": [
+            0,
+            4
+          ],
+          "height": 2.7,
+          "thickness": 0.16
+        },
+        {
+          "id": "w4",
+          "start": [
+            0,
+            4
+          ],
+          "end": [
+            0,
+            0
+          ],
+          "height": 2.7,
+          "thickness": 0.16
+        },
+        {
+          "id": "w5",
+          "start": [
+            3,
+            0
+          ],
+          "end": [
+            3,
+            4
+          ],
+          "height": 2.7,
+          "thickness": 0.16
+        }
+      ],
+      "rooms": [
+        {
+          "id": "r1",
+          "name": "リビング",
+          "outline": [
+            [
+              0.08,
+              0.08
+            ],
+            [
+              2.92,
+              0.08
+            ],
+            [
+              2.92,
+              3.92
+            ],
+            [
+              0.08,
+              3.92
+            ]
+          ]
+        },
+        {
+          "id": "r2",
+          "name": "寝室",
+          "outline": [
+            [
+              3.08,
+              0.08
+            ],
+            [
+              5.92,
+              0.08
+            ],
+            [
+              5.92,
+              3.92
+            ],
+            [
+              3.08,
+              3.92
+            ]
+          ]
+        }
+      ],
+      "openings": [
+        {
+          "id": "d1",
+          "kind": "door",
+          "wallId": "w5",
+          "offset": 1.5,
+          "width": 0.9,
+          "height": 2,
+          "bottom": 0
+        },
+        {
+          "id": "win1",
+          "kind": "window",
+          "wallId": "w1",
+          "offset": 0.8,
+          "width": 1.5,
+          "height": 1.2,
+          "bottom": 0.8
+        }
+      ],
+      "floors": [
+        {
+          "id": "floor-1",
+          "outline": [
+            [
+              -0.08,
+              -0.08
+            ],
+            [
+              6.08,
+              -0.08
+            ],
+            [
+              6.08,
+              4.08
+            ],
+            [
+              -0.08,
+              4.08
+            ]
+          ],
+          "top": 0,
+          "thickness": 0.12
+        }
+      ],
+      "ceilings": [
+        {
+          "id": "ceiling-1",
+          "outline": [
+            [
+              0.08,
+              0.08
+            ],
+            [
+              5.92,
+              0.08
+            ],
+            [
+              5.92,
+              3.92
+            ],
+            [
+              0.08,
+              3.92
+            ]
+          ],
+          "bottom": 2.7,
+          "thickness": 0.1
+        }
+      ]
+    }
+  ],
+  "roof": {
+    "levelId": "level-1",
+    "type": "gable",
+    "eaveHeight": 2.8,
+    "pitchDeg": 30,
+    "overhang": 0.4,
+    "ridgeDirection": [
+      0,
+      1
+    ]
+  },
+  "drawings": [],
+  "review": {
+    "source": "sample",
+    "status": "draft",
+    "unconfirmed": []
+  }
+}

@@ -1,0 +1,40 @@
+.trace-overlay { position: absolute; z-index: 1; overflow: hidden; cursor: crosshair; touch-action: none; }
+#traceControls fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+#traceControls label { display: block; margin-top: 10px; }
+#traceControls input, #traceControls textarea { width: 100%; box-sizing: border-box; }
+#traceControls input { min-height: 32px; padding: 5px; border: 1px solid var(--line); border-radius: 4px; }
+#traceControls textarea { font: 11px monospace; }
+#traceControls .button { margin: 4px 0; white-space: normal; }
+#traceControls .trace-actions { display: flex; flex-wrap: wrap; gap: 3px; }
+#traceControls [role=status] { white-space: pre-line; }
+
+/* The growing editing panel scrolls independently from the drawing surface. */
+@media (min-width: 1081px) {
+  .app { height: 100vh; min-height: 540px; grid-template-rows: 66px minmax(0, 1fr); }
+}
+@media (min-width: 701px) and (max-width: 1080px) {
+  .layout { grid-template-rows: minmax(530px, calc(100vh - 66px)) auto; }
+}
+@media (max-width: 700px) {
+  .sidebar-left { max-height: 45vh; }
+}
+#traceProjectControls input { width: 100%; box-sizing: border-box; margin: 8px 0; font-size: 11px; }
+#traceProjectControls label { display: block; }
+#traceProjectControls .button { white-space: normal; margin: 4px 0; }
+#traceProjectControls [role=status] { white-space: pre-line; }
+.ai-overlay { position: absolute; z-index: 2; pointer-events: none; }
+#aiControls .button { margin: 5px 0; white-space: normal; }
+#aiControls [role=status] { white-space: pre-line; }
+#aiControls select,#aiControls input:not([type=checkbox]) {width:100%;min-height:32px;margin:4px 0;box-sizing:border-box;}
+#aiControls label {display:block;font-size:12px;margin:5px 0;}
+#aiCandidates {max-height:180px;overflow:auto;}
+#traceControls input[type=checkbox] {width:auto;min-height:0;}
+#traceControls button[aria-pressed=true] {background:#dceee4;border-color:#156a4b;font-weight:700;}
+.trace-overlay:focus-visible {outline:2px solid #175dc0;}
+.shape-toolbar {border:1px solid var(--line);border-radius:8px;padding:10px;margin:8px 0 14px;background:#f6faf7;}
+.shape-toolbar [role=group] {display:flex;gap:5px;flex-wrap:wrap;}
+.shape-toolbar button {padding:8px;border:1px solid #9cafaa;border-radius:5px;background:white;cursor:pointer;}
+.shape-toolbar button[aria-pressed=true] {background:#dceee4;border-color:#156a4b;}
+.shape-toolbar input[type=range] {padding:0;}
+
+.sidebar-right fieldset {border:0;padding:0;min-width:0;} .sidebar-right fieldset label {display:block;font-size:12px;margin:10px 0;} .sidebar-right fieldset input:not([type=checkbox]),.sidebar-right fieldset select {width:100%;box-sizing:border-box;min-height:30px;} .sidebar-right fieldset button {margin:4px 0;padding:6px;max-width:100%;white-space:normal;}

@@ -1,0 +1,1072 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f2f2eb" />
+    <meta name="description" content="平面図から住宅の3Dモデルを確認する、AI House 3D Creator の試作版です。" />
+    <title>AI House 3D Creator</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --paper: #f2f2eb;
+        --panel: #fbfbf7;
+        --ink: #202c29;
+        --muted: #78817b;
+        --line: #dedfd6;
+        --green: #306b55;
+        --green-dark: #214638;
+        --lime: #d3e472;
+        --orange: #d17a4d;
+        --blue: #8ca7b4;
+        --ui: "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+      [hidden] { display: none !important; }
+      body { margin: 0; min-width: 320px; background: var(--paper); color: var(--ink); font-family: var(--ui); font-size: 13px; }
+      button, input, select { font: inherit; }
+      button { color: inherit; }
+      .app { min-height: 100vh; display: grid; grid-template-rows: 66px 1fr; }
+      .topbar { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 0 25px; border-bottom: 1px solid var(--line); background: var(--panel); }
+      .brand { display: flex; align-items: center; gap: 12px; min-width: 240px; }
+      .brand-mark { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 9px; background: var(--green-dark); color: var(--lime); }
+      .brand-mark svg { width: 21px; height: 21px; }
+      .brand-name { font-family: Georgia, "Yu Mincho", serif; font-size: 16px; letter-spacing: 0; }
+      .brand-sub { margin-top: 2px; color: var(--muted); font-size: 10px; letter-spacing: .06em; }
+      .project-title { overflow: hidden; color: var(--muted); text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+      .top-actions { display: flex; justify-content: flex-end; align-items: center; gap: 9px; min-width: 240px; }
+      .save-status { color: var(--muted); font-size: 11px; }
+      .button { min-height: 35px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 0 12px; border: 1px solid var(--line); border-radius: 5px; background: transparent; cursor: pointer; transition: background .16s, border-color .16s, transform .16s; }
+      .button:hover { border-color: #aab3a7; background: #f1f3eb; }
+      .button:active { transform: translateY(1px); }
+      .button svg { width: 15px; height: 15px; flex: none; }
+      .button-primary { border-color: var(--green); background: var(--green); color: white; }
+      .button-primary:hover { border-color: var(--green-dark); background: var(--green-dark); }
+      .icon-button { width: 34px; min-width: 34px; height: 34px; padding: 0; }
+      .layout { min-height: 0; display: grid; grid-template-columns: 276px minmax(0, 1fr) 260px; }
+      .sidebar { min-height: 0; overflow-y: auto; background: var(--panel); }
+      .sidebar-left { border-right: 1px solid var(--line); }
+      .sidebar-right { border-left: 1px solid var(--line); }
+      .side-section { padding: 21px 19px; border-bottom: 1px solid var(--line); }
+      .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 9px; margin: 0 0 15px; font-size: 12px; font-weight: 650; }
+      .eyebrow { color: var(--muted); font-size: 10px; letter-spacing: .09em; text-transform: uppercase; }
+      .step-list { display: grid; gap: 12px; }
+      .step { display: grid; grid-template-columns: 25px 1fr; align-items: start; gap: 10px; }
+      .step-number { width: 25px; height: 25px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; color: var(--muted); font-size: 10px; }
+      .step.active .step-number { border-color: var(--green); background: var(--green); color: white; }
+      .step-title { padding-top: 1px; font-size: 12px; }
+      .step-note { margin-top: 4px; color: var(--muted); font-size: 10px; line-height: 1.5; }
+      .dropzone { position: relative; display: grid; min-height: 126px; place-content: center; justify-items: center; gap: 8px; padding: 16px; border: 1px dashed #aeb8a9; border-radius: 6px; background: #f7f8f2; text-align: center; cursor: pointer; transition: background .16s, border-color .16s; }
+      .dropzone:hover, .dropzone.dragging { border-color: var(--green); background: #eff3e5; }
+      .dropzone svg { width: 24px; height: 24px; color: var(--green); }
+      .drop-title { font-size: 11px; font-weight: 600; }
+      .drop-note { color: var(--muted); font-size: 10px; }
+      .dropzone input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+      .file-info { display: none; align-items: center; justify-content: space-between; gap: 8px; margin-top: 11px; font-size: 10px; }
+      .file-info.visible { display: flex; }
+      .file-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .text-button { padding: 2px; border: 0; background: none; color: var(--green); cursor: pointer; font-size: 10px; white-space: nowrap; }
+      .hint { margin: 11px 0 0; color: var(--muted); font-size: 10px; line-height: 1.65; }
+      .floor-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+      .floor-name { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+      .floor-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+      .badge { padding: 4px 7px; border-radius: 3px; background: #eef0e7; color: var(--muted); font-size: 9px; }
+      .main { min-width: 0; min-height: 0; display: grid; grid-template-rows: 54px minmax(360px, 1fr) 31px; padding: 0 17px 12px; }
+      .viewbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+      .tabs { display: flex; align-self: stretch; gap: 17px; }
+      .tab { position: relative; padding: 0 2px; border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 11px; }
+      .tab.active { color: var(--ink); font-weight: 650; }
+      .tab.active::after { position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; background: var(--green); content: ""; }
+      .view-actions { display: flex; align-items: center; gap: 6px; }
+      .workspace { position: relative; min-height: 0; overflow: hidden; border: 1px solid #dfe1d7; border-radius: 6px; background-color: #e8ebe3; background-image: radial-gradient(#c9cec1 .7px, transparent .7px); background-size: 18px 18px; }
+      #scene { position: absolute; inset: 0; }
+      #scene canvas { display: block; width: 100%; height: 100%; }
+      .scene-label { position: absolute; top: 16px; left: 17px; display: grid; gap: 4px; pointer-events: none; }
+      .scene-label strong { font-family: Georgia, "Yu Mincho", serif; font-size: 14px; font-weight: 500; }
+      .scene-label span { color: #707970; font-size: 10px; }
+      .scene-controls { position: absolute; right: 14px; bottom: 14px; display: flex; align-items: center; gap: 6px; padding: 5px; border: 1px solid #d8dbd2; border-radius: 5px; background: #fafbf4ef; }
+      .scene-controls .button { min-height: 30px; border-color: transparent; font-size: 10px; }
+      .scene-controls .button[aria-pressed="true"] { background: #e6ecdc; color: var(--green-dark); }
+      .scene-loading { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 10px; color: var(--muted); font-size: 11px; }
+      .scene-loading[hidden] { display: none; }
+      .spinner { width: 20px; height: 20px; border: 2px solid #cdd3c7; border-top-color: var(--green); border-radius: 50%; animation: spin .8s linear infinite; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .preview { position: absolute; inset: 0; display: none; overflow: hidden; align-items: center; justify-content: center; background: #e8ebe3; touch-action: none; }
+      .preview.visible { display: flex; }
+      .preview img, .preview canvas { flex: none; max-width: none; box-shadow: 0 8px 30px #28382f24; transform-origin: center; user-select: none; }
+      .preview img { display: block; object-fit: contain; cursor: grab; }
+      .preview canvas { display: block; background: white; cursor: grab; }
+      .preview.panning img, .preview.panning canvas { cursor: grabbing; }
+      .preview-empty { display: none; max-width: 280px; padding: 25px; color: var(--muted); text-align: center; font-size: 11px; line-height: 1.7; }
+      .preview-empty.visible { display: block; }
+      .preview-toolbar { position: absolute; right: 14px; bottom: 14px; z-index: 1; display: flex; align-items: center; gap: 5px; padding: 5px; border: 1px solid #d8dbd2; border-radius: 5px; background: #fafbf4ef; }
+      .zoom-label { min-width: 38px; color: var(--muted); text-align: center; font-size: 10px; }
+      .workspace-status { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 9px; }
+      .status-left { display: flex; align-items: center; gap: 7px; }
+      .status-light { width: 6px; height: 6px; border-radius: 50%; background: #71a87b; }
+      .settings-group { display: grid; gap: 13px; }
+      .setting { display: grid; gap: 7px; }
+      .setting-line { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+      .setting label, .setting-label { color: #59645d; font-size: 10px; }
+      .setting output { color: var(--muted); font-size: 10px; }
+      select, input[type="number"] { width: 100%; height: 34px; padding: 0 9px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); color: var(--ink); font-size: 11px; }
+      input[type="range"] { width: 100%; accent-color: var(--green); }
+      .color-row { display: flex; align-items: center; gap: 9px; }
+      input[type="color"] { width: 29px; height: 27px; padding: 2px; border: 1px solid var(--line); border-radius: 4px; background: white; cursor: pointer; }
+      .color-value { color: var(--muted); font-size: 10px; }
+      .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+      .toggle-row span { color: #59645d; font-size: 10px; }
+      .switch { position: relative; width: 32px; height: 18px; flex: none; }
+      .switch input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+      .switch span { position: absolute; inset: 0; border-radius: 20px; background: #c9cec5; cursor: pointer; transition: background .16s; }
+      .switch span::after { position: absolute; top: 3px; left: 3px; width: 12px; height: 12px; border-radius: 50%; background: white; content: ""; transition: transform .16s; }
+      .switch input:checked + span { background: var(--green); }
+      .switch input:checked + span::after { transform: translateX(14px); }
+      .switch input:focus-visible + span { outline: 2px solid var(--orange); outline-offset: 2px; }
+      .roof-preview { height: 102px; display: grid; place-items: center; overflow: hidden; border: 1px solid var(--line); border-radius: 5px; background: linear-gradient(145deg, #f3f4ed, #e8ece2); }
+      .roof-preview svg { width: 130px; height: 80px; overflow: visible; }
+      .roof-caption { margin-top: -7px; color: var(--green); text-align: center; font-size: 10px; }
+      .info-box { padding: 11px; border-left: 2px solid var(--orange); background: #f5f0e9; color: #786b5d; font-size: 10px; line-height: 1.65; }
+      .toast { position: fixed; right: 20px; bottom: 20px; z-index: 10; max-width: min(390px, calc(100vw - 40px)); padding: 12px 15px; border: 1px solid #d7ddce; border-radius: 5px; background: #fbfcf7; box-shadow: 0 6px 24px #26352c1a; color: var(--ink); font-size: 11px; line-height: 1.5; opacity: 0; pointer-events: none; transform: translateY(8px); transition: opacity .2s, transform .2s; }
+      .toast.visible { opacity: 1; transform: translateY(0); }
+      .toast.error { border-color: #e6c1ab; }
+      @media (max-width: 1080px) {
+        .layout { grid-template-columns: 245px minmax(0, 1fr); }
+        .sidebar-right { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line); border-left: 0; }
+        .sidebar-right .side-section { border-right: 1px solid var(--line); border-bottom: 0; }
+        .main { min-height: 530px; }
+      }
+      @media (max-width: 700px) {
+        .app { grid-template-rows: 58px 1fr; }
+        .topbar { padding: 0 13px; }
+        .brand { min-width: 0; }
+        .brand-sub, .project-title, .save-status { display: none; }
+        .top-actions { min-width: 0; }
+        .top-actions .button { min-height: 32px; padding: 0 9px; font-size: 10px; }
+        .layout { grid-template-columns: 1fr; }
+        .sidebar-left { border-right: 0; border-bottom: 1px solid var(--line); }
+        .sidebar-left .side-section:first-child { padding: 13px 15px; }
+        .sidebar-left .step-list { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .step { grid-template-columns: 22px 1fr; gap: 6px; }
+        .step-number { width: 22px; height: 22px; }
+        .step-title { font-size: 10px; }
+        .step-note { display: none; }
+        .sidebar-left .side-section:nth-child(2) { padding: 13px 15px; }
+        .dropzone { min-height: 82px; grid-template-columns: 23px 1fr; justify-content: start; justify-items: start; text-align: left; }
+        .dropzone svg { grid-row: span 2; align-self: center; }
+        .hint { margin-top: 7px; }
+        .sidebar-left .side-section:last-child { padding: 11px 15px; }
+        .main { min-height: 440px; grid-template-rows: 48px minmax(340px, 1fr) 28px; padding: 0 10px 9px; }
+        .tabs { gap: 12px; }
+        .tab { font-size: 10px; }
+        .view-actions .button { min-height: 30px; padding: 0 8px; font-size: 10px; }
+        .workspace { min-height: 340px; }
+        .scene-label { top: 12px; left: 12px; }
+        .scene-controls { right: 8px; bottom: 8px; }
+        .sidebar-right { grid-template-columns: 1fr 1fr; }
+        .sidebar-right .side-section { padding: 15px; border-bottom: 1px solid var(--line); }
+        .sidebar-right .side-section:last-child { grid-column: 1 / -1; }
+      }
+      @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+    </style>
+    <link rel="stylesheet" href="./src/trace/trace.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand" aria-label="AI House 3D Creator">
+          <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="m3.5 11 8.5-7 8.5 7v9h-6v-6h-5v6h-6v-9Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 11.5h8" stroke="currentColor" stroke-width="1.4"/></svg></div>
+          <div><div class="brand-name">AI House 3D Creator</div><div class="brand-sub">PLAN TO SPACE / WORKSPACE</div></div>
+        </div>
+        <div class="project-title" id="projectTitle">サンプル住宅 / 無題のプロジェクト</div>
+        <div class="top-actions">
+          <span class="save-status" id="saveStatus">ブラウザ内で動作</span>
+          <button class="button" id="saveButton" type="button" title="プロジェクトをJSON形式で保存">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 4h12l3 3v13H4V4h1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 4v6h8V4M8 20v-6h8v6" stroke="currentColor" stroke-width="1.6"/></svg><span>保存</span>
+          </button>
+          <button class="button button-primary" id="generateButton" type="button" title="現在はサンプル住宅を表示しています">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 3 2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2L12 3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg><span>モデルを生成</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="layout">
+        <aside class="sidebar sidebar-left" aria-label="プロジェクトの操作">
+          <section class="side-section">
+            <div class="section-heading"><span>制作ステップ</span><span class="eyebrow">PHASE 01</span></div>
+            <div class="step-list">
+              <div class="step active"><span class="step-number">01</span><div><div class="step-title">平面図を追加</div><div class="step-note">画像またはPDFを読み込み</div></div></div>
+              <div class="step"><span class="step-number">02</span><div><div class="step-title">間取りを確認</div><div class="step-note">縮尺設定・壁の手動入力</div></div></div>
+              <div class="step"><span class="step-number">03</span><div><div class="step-title">3Dモデルを作成</div><div class="step-note" id="modelStepNote">サンプル住宅を表示中</div></div></div>
+            </div>
+          </section>
+
+          <section class="side-section" id="planControls"></section>
+
+          <section class="side-section">
+            <h2 class="section-heading">平面図</h2>
+            <label class="dropzone" id="dropzone" for="fileInput">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v5h14v-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span class="drop-title">ファイルをドロップ、または選択</span>
+              <span class="drop-note">JPG / PNG / PDF ・ 25 MBまで</span>
+              <input id="fileInput" type="file" accept="image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf" aria-label="平面図ファイルを選択" />
+            </label>
+            <div class="file-info" id="fileInfo"><span class="file-name" id="fileName"></span><button class="text-button" id="removeFile" type="button">解除</button></div>
+            <p class="hint"><a href="./student-guide.html" target="_blank" rel="noopener">操作ガイド</a> <span id="drawingPrivacy">プレビューはブラウザー内で処理します。AI操作を実行した場合だけ、現在の1ページを解析サーバーへ送ります。</span></p>
+          </section>
+
+          <section class="side-section" id="aiControls"></section>
+          <section class="side-section" id="traceProjectControls"></section>
+          <section class="side-section" id="traceControls"></section>
+
+          <section class="side-section">
+            <div class="floor-row"><div class="floor-name"><span class="floor-dot"></span><span>階数</span></div><span class="badge">未判定</span></div>
+          </section>
+        </aside>
+
+        <main class="main">
+          <div class="viewbar">
+            <div class="tabs" role="tablist" aria-label="表示ビュー">
+              <button class="tab active" id="modelTab" type="button" role="tab" aria-selected="true">3Dモデル</button>
+              <button class="tab" id="planTab" type="button" role="tab" aria-selected="false">平面図プレビュー</button>
+            </div>
+            <div class="view-actions">
+              <button class="button icon-button" id="resetView" type="button" title="視点をリセット" aria-label="視点をリセット"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 10a8 8 0 1 1 1.6 6.3M4 4v6h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <button class="button" id="topView" type="button" title="上空から見る">俯瞰</button>
+            </div>
+          </div>
+
+          <div class="workspace" id="workspace">
+            <div id="scene" aria-label="回転・拡大縮小できるサンプル住宅の3Dビュー"><p id="traceDisplayStatus" role="status" style="position:absolute;top:12px;left:16px;right:16px;z-index:1;pointer-events:none;white-space:pre-line;background:#ffffffe6;border-radius:6px;padding:8px" hidden></p></div>
+            <div class="scene-label"><strong>Garden House / 01</strong><span>サンプルモデル ・ 平屋</span></div>
+            <div class="scene-loading" id="sceneLoading"><span class="spinner"></span><span>3Dモデルを読み込み中</span></div>
+            <div class="preview" id="preview" aria-label="アップロードした平面図"><div class="preview-empty" id="previewEmpty">左のパネルから平面図を選ぶと、ここにプレビューを表示します。</div><img id="imagePreview" alt="アップロードした平面図" draggable="false" hidden /><canvas id="pdfCanvas" hidden></canvas></div>
+            <div class="preview-toolbar" id="previewToolbar" hidden>
+              <button class="button icon-button" id="zoomOut" type="button" title="縮小" aria-label="縮小"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.5" stroke="currentColor" stroke-width="1.6"/><path d="M16 16l4.5 4.5M7.5 10.8h6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+              <span class="zoom-label" id="zoomLabel">100%</span>
+              <button class="button icon-button" id="zoomIn" type="button" title="拡大" aria-label="拡大"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.5" stroke="currentColor" stroke-width="1.6"/><path d="M16 16l4.5 4.5M10.8 7.5v6.5M7.5 10.8h6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+              <button class="button icon-button" id="fitPreview" type="button" title="全体を表示" aria-label="全体を表示"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5M8 8h8v8H8z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <span id="pdfPageControls" hidden><button class="button" id="prevPage" type="button" title="前のページ" aria-label="前のページ">‹</button><span class="zoom-label" id="pageLabel">1 / 1</span><button class="button" id="nextPage" type="button" title="次のページ" aria-label="次のページ">›</button></span>
+            </div>
+            <div class="scene-controls" id="sceneControls">
+              <button class="button" id="roofToggle" type="button" aria-pressed="true">屋根</button>
+              <button class="button" id="labelsToggle" type="button" aria-pressed="true">部屋名</button>
+            </div>
+          </div>
+
+          <div class="workspace-status"><span class="status-left"><span class="status-light"></span><span id="statusText">サンプル住宅を表示中</span></span><span>MM / メートル表示</span></div>
+        </main>
+
+        <aside class="sidebar sidebar-right" aria-label="モデルの設定">
+          <section class="side-section">
+            <h2 class="section-heading">屋根のデザイン <span class="eyebrow">PREVIEW</span></h2>
+            <div class="setting">
+              <label for="roofType">屋根の形状</label>
+              <select id="roofType"><option value="gable">切妻屋根</option><option value="hip">寄棟屋根</option><option value="shed">片流れ屋根</option><option value="flat">陸屋根（屋上タイプ）</option></select>
+            </div>
+            <div class="roof-preview" aria-label="切妻屋根のプレビュー">
+              <svg id="roofPreviewSvg" viewBox="0 0 150 90" fill="none" aria-hidden="true"><path d="M30 43 75 18l45 25v32H30V43Z" fill="#d5ded2" stroke="#839486" stroke-width="1.5"/><path d="m22 43 53-30 53 30-7 5-46-26-46 26-7-5Z" fill="#c97750" stroke="#a65f3f" stroke-width="1.5" stroke-linejoin="round"/><path d="M74 23v49M42 54h20v21H42zM86 54h20v21H86z" stroke="#839486" stroke-width="1.5"/></svg>
+            </div>
+            <div class="roof-caption" id="roofPreviewLabel">切妻屋根を表示中</div>
+            <div class="settings-group" style="margin-top:13px">
+              <div class="setting"><div class="setting-line"><label for="roofPitch">屋根の傾斜</label><output id="pitchOutput">30°</output></div><input id="roofPitch" type="range" min="15" max="45" value="30" /></div>
+              <div class="setting"><div class="setting-line"><label for="eaveDepth">軒の出</label><output id="eaveOutput">0.4 m</output></div><input id="eaveDepth" type="range" min="0" max="10" value="4" /></div>
+              <div class="setting"><div class="setting-line"><span class="setting-label">屋根の色</span><span class="color-row"><input id="roofColor" type="color" value="#c97850" aria-label="屋根の色" /><span class="color-value" id="roofColorValue">#c97850</span></span></div></div>
+            </div>
+          </section>
+
+          <section class="side-section">
+            <h2 class="section-heading">建物の設定</h2>
+            <div class="settings-group">
+              <div class="setting"><label for="wallHeight">壁の高さ</label><select id="wallHeight"><option value="2.7">2.7 m</option><option value="2.4">2.4 m</option><option value="3">3.0 m</option></select></div>
+              <div class="setting"><label for="wallColor">壁の色</label><span class="color-row"><input id="wallColor" type="color" value="#e4e0d5" aria-label="壁の色" /><span class="color-value" id="wallColorValue">#e4e0d5</span></span></div>
+              <label class="toggle-row"><span>部屋名ラベル</span><span class="switch"><input id="labelSwitch" type="checkbox" checked /><span></span></span></label>
+              <label class="toggle-row"><span>影を表示</span><span class="switch"><input id="shadowSwitch" type="checkbox" checked /><span></span></span></label>
+            </div>
+          </section>
+
+          <section class="side-section">
+            <h2 class="section-heading">このバージョンについて</h2>
+            <div class="info-box">屋根はサンプル住宅の単純な矩形外形向けです。複雑な平面形状への対応と、AI解析は検証段階です。外部送信の許可とサーバー設定が必要です。手動入力はそのまま利用できます。</div>
+          </section>
+        </aside>
+      </div>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script type="importmap">
+      { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }
+    </script>
+    <script type="module">
+      import { CLASSROOM_MODE } from './src/config.mjs';
+      import { mountStairControls } from './src/building/stair-controller.mjs';
+      import { mountWindowControls } from './src/building/window-controller.mjs';
+      import { mountBuildingControls } from './src/building/controller.mjs';
+      import { mountPlanControls } from './src/plan/controller.mjs';
+      import { mountTraceControls } from './src/trace/controller.mjs';
+      import { mountTracePersistence } from './src/trace/persistence.mjs';
+      import { mountAIControls } from './src/ai/controller.mjs';
+      import { fingerprintDrawing } from './src/trace/project.mjs';
+      const $ = (selector) => document.querySelector(selector);
+      const fileInput = $('#fileInput');
+      const dropzone = $('#dropzone');
+      const preview = $('#preview');
+      const imagePreview = $('#imagePreview');
+      const pdfCanvas = $('#pdfCanvas');
+      const previewEmpty = $('#previewEmpty');
+      const previewToolbar = $('#previewToolbar');
+      const scene = $('#scene');
+      const loading = $('#sceneLoading');
+      const sceneControls = $('#sceneControls');
+      const toast = $('#toast');
+      const MAX_FILE_SIZE = 25 * 1024 * 1024;
+      let currentFile = null;
+      let currentObjectUrl = null;
+      let pdfDocument = null;
+      let pdfPage = 1;
+      let zoom = 1;
+      let fitScale = 1;
+      let previewBaseWidth = 0;
+      let previewBaseHeight = 0;
+      let panX = 0;
+      let panY = 0;
+      let panStartX = 0;
+      let panStartY = 0;
+      let isPanning = false;
+      let toastTimer;
+      let three = null;
+      let controls = null;
+      let house = null;
+      let roofMaterial = null;
+      let wallMaterials = [];
+      let roomLabels = [];
+      let renderer = null;
+      let camera = null;
+      let scene3d = null;
+      let initialCamera = null;
+      let fileRevision = 0, pdfRenderRevision = 0, pdfRenderTask = null;
+      if(CLASSROOM_MODE){$('#drawingPrivacy').textContent='図面・編集・保存はこのブラウザ内だけで処理します。画像や作業データを外部へ送りません。';}
+      let currentFingerprint = null;
+      let aiController = null, traceController = null;
+      const planController = mountPlanControls($('#planControls'), {
+        getRuntime: () => three && house && renderer && camera && controls
+          ? { THREE: three, legacy: house, scene: scene3d, camera, controls } : null,
+        showModelTab: () => $('#modelTab').click(),
+        getTraceName: () => traceController?.getDisplayName()||'全体・手動作業',
+        onTraceStatus: text => {$('#traceDisplayStatus').textContent=text;$('#traceDisplayStatus').hidden=!text;},
+        onModeChange: (mode) => {
+          const title = modelTitle(mode);
+          $('#modelStepNote').textContent = `${title}を表示中`;
+          $('#projectTitle').textContent = mode !== 'sample' && !preview.classList.contains('visible') ? title : (currentFile ? `${currentFile.name} / 階は範囲を指定して選択` : 'サンプル住宅 / 無題のプロジェクト');
+          $('.scene-label strong').textContent = mode === 'sample' ? 'Garden House / 01' : title;
+          $('.scene-label span').textContent = mode === 'sample' ? 'サンプルモデル ・ 平屋' : mode === 'trace' ? '編集中の住宅 / 矩形外形のみ床・屋根に対応' : '壁・床・開口部のみ / 天井・屋根なし';
+          scene.setAttribute('aria-label', `${title}の3Dビュー`);
+          $('#statusText').textContent = preview.classList.contains('visible') ? '平面図を表示中・階は範囲を指定して選択' : `${title}を表示中`;
+        },
+      });
+      function modelTitle(mode = planController.mode) {
+        return mode === 'trace' ? `${traceController?.getDisplayName()||'全体'}・編集中の住宅` : mode === 'json' ? '間取りJSONの住宅' : 'サンプル住宅';
+      }
+      traceController = mountTraceControls($('#traceControls'), {
+        showPlanTab: () => $('#planTab').click(),
+        preview, getElement: () => pdfCanvas.hidden ? imagePreview : pdfCanvas,
+        update3D: (layout, show) => planController.setTraceLayout(layout, show, true),
+      });
+
+      const viewBar=document.createElement('div');viewBar.id='houseViews';viewBar.style.cssText='position:absolute;top:12px;right:12px;z-index:5;display:flex;gap:5px;flex-wrap:wrap;max-width:90%;background:#fffE;padding:6px;border-radius:8px';viewBar.setAttribute('role','group');viewBar.setAttribute('aria-label','壁面を見る方向');for(const [key,name]of [['front','正面'],['back','背面'],['left','左側'],['right','右側'],['top','俯瞰']]){const b=document.createElement('button');b.type='button';b.textContent=name;b.dataset.houseView=key;b.onclick=()=>{scene.dispatchEvent(new Event('house-view-change'));if(!planController.resetView(key)){const direction={front:[0,0,1],back:[0,0,-1],left:[-1,0,0],right:[1,0,0],top:[0,1,.0001]}[key];if(camera&&controls){const distance=Math.max(10,camera.position.distanceTo(controls.target));camera.position.copy(controls.target).add(new three.Vector3(...direction).normalize().multiplyScalar(distance));controls.update();}}};viewBar.append(b);}scene.append(viewBar);
+      const floorBar=document.createElement('div');floorBar.style.cssText='position:absolute;bottom:16px;left:16px;display:flex;gap:6px;flex-wrap:wrap;z-index:4;background:#fffE;padding:8px;border-radius:8px';$('#scene').append(floorBar);
+      function syncFloorBar(){floorBar.hidden=planController.mode!=='trace';floorBar.style.display=floorBar.hidden?'none':'flex';floorBar.replaceChildren();const edit=document.createElement('span');edit.textContent='編集：'+(traceController.getFloor()?.name||'未選択');floorBar.append(edit);for(const f of [{id:'all',name:'全体'},...traceController.getFloors()]){const b=document.createElement('button');b.type='button';b.textContent=f.name;b.setAttribute('aria-pressed',String(traceController.getBuildingView()===f.id||(traceController.getBuildingView()==='active'&&traceController.getFloor()?.id===f.id)));b.onclick=()=>{traceController.showBuilding(f.id);planController.resetView();};floorBar.append(b);}const displayed=traceController.getBuildingView();if(!['active','all',traceController.getFloor()?.id].includes(displayed)){const editButton=document.createElement('button');editButton.type='button';editButton.textContent='表示中の階を編集';editButton.onclick=()=>traceController.selectFloor(displayed);floorBar.append(editButton);}}
+      traceController.subscribe(syncFloorBar);planController.subscribeTrace(syncFloorBar);syncFloorBar();
+      const buildingHost=document.createElement('section');buildingHost.className='side-section';$('.sidebar-right').prepend(buildingHost);mountBuildingControls(buildingHost,traceController);
+      const windowHost=document.createElement('section');windowHost.className='side-section';$('.sidebar-right').prepend(windowHost);mountWindowControls(windowHost,{trace:traceController,plan:planController,scene,showModelTab:()=>$('#modelTab').click()});
+      const sampleDetails=document.createElement('details');sampleDetails.innerHTML='<summary>サンプル住宅専用・表示の詳細</summary>';for(const section of [...$('.sidebar-right').children])if(section!==buildingHost&&section!==windowHost)sampleDetails.append(section);$('.sidebar-right').append(sampleDetails);const stairHost=document.createElement('section');stairHost.className='side-section';sampleDetails.before(stairHost);mountStairControls(stairHost,traceController);
+      const devDetails=document.createElement('details');devDetails.innerHTML='<summary>詳細：サンプル・間取りJSONの検証</summary>';$('#planControls').before(devDetails);devDetails.append($('#planControls'));
+      $('#saveButton').hidden=true;$('#generateButton').hidden=true;$('.floor-row').closest('section').hidden=true;
+      traceController.subscribe(()=>{if(planController.mode==='trace'){const title=modelTitle();$('.scene-label strong').textContent=title;if(!preview.classList.contains('visible'))$('#projectTitle').textContent=title;}});
+
+      const tracePersistence = mountTracePersistence($('#traceProjectControls'), {
+        trace: traceController, inspectDrawing: inspectTraceDrawing,
+        activatePage: async (number) => {
+          const revision = fileRevision;
+          let visible = true;
+          if (pdfDocument) { pdfPage = number; visible = await renderPdfPage(); }
+          else if (currentFile && imagePreview.complete && imagePreview.naturalWidth) {
+            traceController.setPage(1, [imagePreview.naturalWidth, imagePreview.naturalHeight], 'px');
+          } else return false;
+          if (revision !== fileRevision) return false;
+          $('#planTab').click();
+          return visible;
+        },
+      });
+      aiController = mountAIControls($('#aiControls'), {
+        trace: traceController, preview, showPlanTab: () => $('#planTab').click(),
+        activatePage: async number => {if(pdfDocument&&pdfPage!==number){pdfPage=number;await renderPdfPage();}},
+        getContext: () => {
+          const page = traceController.getPage(), element = pdfCanvas.hidden ? imagePreview : pdfCanvas;
+          return page && !element.hidden ? { key: `${fileRevision}:${page.page}:${traceController.getFloor()?.id||'base'}`, page, element } : null;
+        },
+      });
+      $('#aiConfig').hidden=true;$('#traceProjectControls').parentElement.append($('#traceProjectControls'));
+      async function inspectTraceDrawing(numbers) {
+        if (!currentFile || !currentFingerprint) return null;
+        const revision = fileRevision, fingerprint = currentFingerprint, documentAtStart = pdfDocument;
+        const pages = [];
+        if (fingerprint.kind === 'pdf') {
+          if (!documentAtStart) return null;
+          for (const number of numbers) {
+            if (number < 1 || number > documentAtStart.numPages) continue;
+            const page = await documentAtStart.getPage(number);
+            if (revision !== fileRevision) return null;
+            const viewport = page.getViewport({ scale: 1 });
+            pages.push({ page: number, sourceSize: [viewport.width, viewport.height], sourceUnit: 'pt' });
+          }
+        } else {
+          if (!imagePreview.complete || !imagePreview.naturalWidth) return null;
+          pages.push({ page: 1, sourceSize: [imagePreview.naturalWidth, imagePreview.naturalHeight], sourceUnit: 'px' });
+        }
+        if (revision !== fileRevision) return null;
+        return { source: { ...fingerprint, pageCount: fingerprint.kind === 'pdf' ? documentAtStart.numPages : 1 }, pages };
+      }
+
+      function notify(message, error = false) {
+        toast.textContent = message;
+        toast.classList.toggle('error', error);
+        toast.classList.add('visible');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('visible'), 3800);
+      }
+
+      function formatSize(bytes) {
+        return bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+      }
+
+      function setPreviewScale() {
+        const element = pdfCanvas.hidden ? imagePreview : pdfCanvas;
+        if (element && !element.hidden) {
+          // Keep the enlarged page reachable without allowing it to be dragged out of view.
+          const maxPanX = Math.max(0, (previewBaseWidth * fitScale * zoom - Math.max(1, preview.clientWidth - 48)) / 2);
+          const maxPanY = Math.max(0, (previewBaseHeight * fitScale * zoom - Math.max(1, preview.clientHeight - 48)) / 2);
+          panX = Math.max(-maxPanX, Math.min(maxPanX, panX));
+          panY = Math.max(-maxPanY, Math.min(maxPanY, panY));
+          element.style.width = `${previewBaseWidth * fitScale}px`;
+          element.style.height = `${previewBaseHeight * fitScale}px`;
+          element.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+          element.style.cursor = zoom > 1 ? 'grab' : 'default';
+        }
+        $('#zoomLabel').textContent = `${Math.round(zoom * 100)}%`;
+        traceController.syncOverlay();
+        aiController?.syncOverlay();
+      }
+
+      function fitPreviewToView(resetPan = false) {
+        // A hidden tab has no usable dimensions. Recalculate when it becomes visible.
+        if (!previewBaseWidth || !previewBaseHeight || !preview.clientWidth || !preview.clientHeight) return;
+        stopPanning();
+        if (resetPan) { panX = 0; panY = 0; }
+        const availableWidth = Math.max(1, preview.clientWidth - 48);
+        const availableHeight = Math.max(1, preview.clientHeight - 48);
+        fitScale = Math.min(1, availableWidth / previewBaseWidth, availableHeight / previewBaseHeight);
+        setPreviewScale();
+      }
+
+      async function renderPdfPage() {
+        if (!pdfDocument) return;
+        const documentAtStart = pdfDocument, pageNumber = pdfPage, revision = fileRevision;
+        const renderRevision = ++pdfRenderRevision;
+        const isCurrent = () => documentAtStart === pdfDocument && revision === fileRevision && renderRevision === pdfRenderRevision;
+        const previousButton = $('#prevPage'), nextButton = $('#nextPage');
+        previousButton.disabled = true; nextButton.disabled = true;
+        traceController.setPage(null);
+        pdfCanvas.hidden = true;
+        const oldTask = pdfRenderTask;
+        if (oldTask) { oldTask.cancel(); await oldTask.promise.catch(() => {}); }
+        try {
+          const page = await documentAtStart.getPage(pageNumber);
+          if (!isCurrent()) return;
+          const context = pdfCanvas.getContext('2d');
+          const viewport = page.getViewport({ scale: 1.15 });
+          const sourceViewport = page.getViewport({ scale: 1 });
+          const pixelRatio = CLASSROOM_MODE ? Math.min(window.devicePixelRatio||1,1.5,4096/Math.max(viewport.width,viewport.height),Math.sqrt(8000000/(viewport.width*viewport.height))) : window.devicePixelRatio||1;
+          pdfCanvas.width = Math.max(1,Math.floor(viewport.width * pixelRatio));
+          pdfCanvas.height = Math.max(1,Math.floor(viewport.height * pixelRatio));
+          previewBaseWidth = viewport.width; previewBaseHeight = viewport.height;
+          const task = page.render({ canvasContext: context, canvas: pdfCanvas, viewport, transform: pixelRatio !== 1 ? [pixelRatio, 0, 0, pixelRatio, 0, 0] : null });
+          pdfRenderTask = task;
+          await task.promise;
+          if (!isCurrent()) return;
+          pdfRenderTask = null; pdfCanvas.hidden = false;
+          $('#pageLabel').textContent = `${pageNumber} / ${documentAtStart.numPages}`;
+          traceController.setPage(pageNumber, [sourceViewport.width, sourceViewport.height], 'pt');
+          fitPreviewToView(true);
+          return true;
+        } catch (error) {
+          if (isCurrent() && error.name !== 'RenderingCancelledException') {
+            console.error(error); notify('PDFページを表示できませんでした。別のページか資料で再試行してください。', true);
+          }
+        } finally {
+          if (isCurrent()) {
+            previousButton.disabled = pageNumber <= 1;
+            nextButton.disabled = pageNumber >= documentAtStart.numPages;
+          }
+        }
+      }
+
+      async function loadFile(file) {
+        if (!file) return;
+        const ext = file.name.split('.').pop()?.toLowerCase();
+        const isImage = ['image/jpeg', 'image/png'].includes(file.type) || ['jpg', 'jpeg', 'png'].includes(ext);
+        const isPdf = file.type === 'application/pdf' || ext === 'pdf';
+        if (!isImage && !isPdf) { notify('JPG、PNG、PDF形式のファイルを選択してください。', true); return; }
+        if (file.size > MAX_FILE_SIZE) { notify('ファイルサイズは25 MB以下にしてください。', true); return; }
+        if (file.size === 0) { notify('ファイルの内容を読み取れません。別のファイルをお試しください。', true); return; }
+
+        clearFile(false);
+        currentFile = file;
+        const revision = fileRevision;
+        currentObjectUrl = URL.createObjectURL(file);
+        zoom = 1;
+        panX = 0;
+        panY = 0;
+        $('#fileInfo').classList.add('visible');
+        $('#fileName').textContent = `${file.name} ・ ${formatSize(file.size)}`;
+        $('#projectTitle').textContent = `${file.name} / 階は範囲を指定して選択`;
+        $('#statusText').textContent = '平面図を表示中・階は範囲を指定して選択';
+        $('#planTab').click();
+        previewEmpty.classList.remove('visible');
+        imagePreview.hidden = true;
+        pdfCanvas.hidden = true;
+        $('#pdfPageControls').hidden = true;
+        previewToolbar.hidden = false;
+
+        try {
+          const fingerprint = await fingerprintDrawing(file, isPdf ? 'pdf' : 'image');
+          if (revision !== fileRevision) return;
+          currentFingerprint = fingerprint;
+        } catch (error) {
+          if (revision !== fileRevision) return;
+          notify('保存・復元のファイル照合を利用できません。' + error.message, true);
+        }
+        if (isImage) {
+          imagePreview.onload = () => {
+            if (revision !== fileRevision) return;
+            previewBaseWidth = imagePreview.naturalWidth;
+            previewBaseHeight = imagePreview.naturalHeight;
+            imagePreview.hidden = false;
+            traceController.setPage(1, [imagePreview.naturalWidth, imagePreview.naturalHeight], 'px');
+            fitPreviewToView(true);
+            tracePersistence.drawingChanged();
+          };
+          imagePreview.onerror = () => notify('画像を読み込めませんでした。ファイルを確認してください。', true);
+          imagePreview.src = currentObjectUrl;
+        } else {
+          try {
+            const pdfjs = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.mjs');
+            pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs';
+            const data = await file.arrayBuffer();
+            if (revision !== fileRevision) return;
+            const loaded = await pdfjs.getDocument({ data }).promise;
+            if (revision !== fileRevision) { loaded.destroy(); return; }
+            pdfDocument = loaded;
+            pdfPage = 1;
+            pdfCanvas.hidden = false;
+            await renderPdfPage();
+            if (revision !== fileRevision) return;
+            $('#pdfPageControls').hidden = false;
+            tracePersistence.drawingChanged();
+          } catch (error) {
+            if (revision !== fileRevision) return;
+            console.error(error);
+            previewEmpty.textContent = 'PDFプレビューを読み込めませんでした。インターネット接続を確認して、もう一度お試しください。';
+            previewEmpty.classList.add('visible');
+            notify('PDFの表示にはPDF.jsの読み込みが必要です。ネットワーク接続をご確認ください。', true);
+          }
+        }
+        if (revision === fileRevision) notify('平面図を読み込みました。ファイルはブラウザ内で処理しています。');
+      }
+
+      function clearFile(showNotice = true) {
+        fileRevision++; pdfRenderRevision++; currentFingerprint = null;
+        if (pdfRenderTask) { pdfRenderTask.cancel(); pdfRenderTask = null; }
+        if (pdfDocument) pdfDocument.destroy().catch(() => {});
+        traceController.reset();
+        imagePreview.onload = null; imagePreview.onerror = null;
+        if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
+        currentObjectUrl = null;
+        currentFile = null;
+        pdfDocument = null;
+        previewBaseWidth = 0;
+        previewBaseHeight = 0;
+        fitScale = 1;
+        panX = 0;
+        panY = 0;
+        fileInput.value = '';
+        imagePreview.removeAttribute('src');
+        imagePreview.hidden = true;
+        pdfCanvas.hidden = true;
+        previewEmpty.classList.remove('visible');
+        previewToolbar.hidden = true;
+        $('#pdfPageControls').hidden = true;
+        $('#fileInfo').classList.remove('visible');
+        $('#projectTitle').textContent = planController.isPlanMode ? modelTitle() : 'サンプル住宅 / 無題のプロジェクト';
+        $('#statusText').textContent = `${modelTitle()}を表示中`;
+        tracePersistence.drawingChanged();
+        if (showNotice) notify('平面図の表示を解除しました。');
+      }
+
+      fileInput.addEventListener('change', (event) => loadFile(event.target.files[0]));
+      $('#removeFile').addEventListener('click', clearFile);
+      dropzone.addEventListener('dragover', (event) => { event.preventDefault(); dropzone.classList.add('dragging'); });
+      dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragging'));
+      dropzone.addEventListener('drop', (event) => { event.preventDefault(); dropzone.classList.remove('dragging'); loadFile(event.dataTransfer.files[0]); });
+      $('#zoomIn').addEventListener('click', () => { zoom = Math.min(zoom + .2, 3); setPreviewScale(); });
+      $('#zoomOut').addEventListener('click', () => { zoom = Math.max(zoom - .2, .4); setPreviewScale(); });
+      $('#fitPreview').addEventListener('click', () => { zoom = 1; fitPreviewToView(true); });
+      preview.addEventListener('pointerdown', (event) => {
+        if (!traceController.isNavigating) return;
+        const image = pdfCanvas.hidden ? imagePreview : pdfCanvas;
+        if (!image || event.target !== image || zoom <= 1) return;
+        isPanning = true;
+        panStartX = event.clientX;
+        panStartY = event.clientY;
+        preview.classList.add('panning');
+        if (event.isTrusted) preview.setPointerCapture(event.pointerId);
+      });
+      preview.addEventListener('pointermove', (event) => {
+        if (!isPanning) return;
+        panX += event.clientX - panStartX;
+        panY += event.clientY - panStartY;
+        panStartX = event.clientX;
+        panStartY = event.clientY;
+        setPreviewScale();
+      });
+      const stopPanning = () => { isPanning = false; preview.classList.remove('panning'); };
+      preview.addEventListener('pointerup', stopPanning);
+      preview.addEventListener('pointercancel', stopPanning);
+      const previewObserver = new ResizeObserver(() => {
+        if (currentFile && preview.classList.contains('visible')) fitPreviewToView();
+      });
+      previewObserver.observe(preview);
+      $('#prevPage').addEventListener('click', async () => { if (pdfDocument && pdfPage > 1) { pdfPage--; await renderPdfPage(); } });
+      $('#nextPage').addEventListener('click', async () => { if (pdfDocument && pdfPage < pdfDocument.numPages) { pdfPage++; await renderPdfPage(); } });
+
+      function setActiveTab(planMode) {
+        stopPanning();
+        $('#modelTab').classList.toggle('active', !planMode);
+        $('#modelTab').setAttribute('aria-selected', String(!planMode));
+        $('#planTab').classList.toggle('active', planMode);
+        $('#planTab').setAttribute('aria-selected', String(planMode));
+        preview.classList.toggle('visible', planMode);
+        previewToolbar.hidden = !planMode || !currentFile;
+        scene.style.visibility = planMode ? 'hidden' : 'visible';
+        sceneControls.hidden = planMode;
+        if (planMode && !currentFile) previewEmpty.classList.add('visible');
+        else previewEmpty.classList.remove('visible');
+        if (planMode && currentFile) previewEmpty.classList.remove('visible');
+        if (planMode && currentFile) fitPreviewToView();
+        if (!planMode && renderer) {resizeRenderer();planController.syncTrace();}
+        $('#statusText').textContent = planMode ? (currentFile ? '平面図を表示中・階は範囲を指定して選択' : '平面図を選択してください') : `${modelTitle()}を表示中`;
+        traceController.syncOverlay();
+        aiController?.syncOverlay();
+        $('#projectTitle').textContent = !planMode && planController.isPlanMode ? modelTitle() : (currentFile ? `${currentFile.name} / 階は範囲を指定して選択` : 'サンプル住宅 / 無題のプロジェクト');
+      }
+      $('#modelTab').addEventListener('click', () => setActiveTab(false));
+      $('#planTab').addEventListener('click', () => setActiveTab(true));
+
+      function makeWall(THREE, parent, axis, coordinate, start, end, height, thickness, openings = []) {
+        const sorted = [...openings].sort((a, b) => a.start - b.start);
+        const segments = [];
+        let cursor = start;
+        for (const opening of sorted) {
+          if (opening.start > cursor) segments.push([cursor, opening.start, height]);
+          if (opening.kind === 'window') {
+            segments.push([opening.start, opening.end, opening.bottom]);
+            segments.push([opening.start, opening.end, height - opening.top]);
+            const glassGeometry = axis === 'x'
+              ? new three.BoxGeometry(opening.end - opening.start, opening.top - opening.bottom, .035)
+              : new three.BoxGeometry(.035, opening.top - opening.bottom, opening.end - opening.start);
+            const glass = new three.Mesh(glassGeometry, windowMaterial);
+            glass.position.set(axis === 'x' ? (opening.start + opening.end) / 2 : coordinate, (opening.top + opening.bottom) / 2, axis === 'x' ? coordinate : (opening.start + opening.end) / 2);
+            parent.add(glass);
+            addWindowFrame(THREE, parent, axis, coordinate, opening);
+          }
+          cursor = opening.end;
+        }
+        if (cursor < end) segments.push([cursor, end, height]);
+        for (const [from, to, wallHeight] of segments) {
+          if (to <= from || wallHeight <= 0) continue;
+          const geometry = axis === 'x'
+            ? new THREE.BoxGeometry(to - from, wallHeight, thickness)
+            : new THREE.BoxGeometry(thickness, wallHeight, to - from);
+          const wall = new THREE.Mesh(geometry, wallMaterial);
+          wall.position.set(axis === 'x' ? (from + to) / 2 : coordinate, wallHeight / 2, axis === 'x' ? coordinate : (from + to) / 2);
+          wall.castShadow = true;
+          wall.receiveShadow = true;
+          parent.add(wall);
+          wallMaterials.push(wall.material);
+        }
+      }
+
+      let windowMaterial;
+      let wallMaterial;
+      function addWindowFrame(THREE, parent, axis, coordinate, opening) {
+        const frameMaterial = new THREE.MeshStandardMaterial({ color: '#f7f5eb', roughness: .55 });
+        const framePositions = axis === 'x'
+          ? [[(opening.start + opening.end) / 2, opening.bottom, coordinate], [(opening.start + opening.end) / 2, opening.top, coordinate], [opening.start, (opening.bottom + opening.top) / 2, coordinate], [opening.end, (opening.bottom + opening.top) / 2, coordinate]]
+          : [[coordinate, opening.bottom, (opening.start + opening.end) / 2], [coordinate, opening.top, (opening.start + opening.end) / 2], [coordinate, (opening.bottom + opening.top) / 2, opening.start], [coordinate, (opening.bottom + opening.top) / 2, opening.end]];
+        framePositions.forEach((position, index) => {
+          const horizontal = index < 2;
+          const geometry = axis === 'x'
+            ? new three.BoxGeometry(horizontal ? opening.end - opening.start : .065, horizontal ? .045 : opening.top - opening.bottom, .07)
+            : new three.BoxGeometry(.07, horizontal ? .045 : opening.top - opening.bottom, horizontal ? opening.end - opening.start : .065);
+          const frame = new three.Mesh(geometry, frameMaterial);
+          frame.position.set(...position);
+          parent.add(frame);
+        });
+      }
+
+      function addLabel(THREE, parent, text, position) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 128;
+        const context = canvas.getContext('2d');
+        context.fillStyle = 'rgba(249,249,241,.88)';
+        context.beginPath();
+        context.roundRect(16, 16, 480, 96, 16);
+        context.fill();
+        context.fillStyle = '#34453c';
+        context.font = '600 44px sans-serif';
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillText(text, 256, 64);
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.colorSpace = THREE.SRGBColorSpace;
+        const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false }));
+        sprite.position.set(...position);
+        sprite.scale.set(1.65, .42, 1);
+        parent.add(sprite);
+        roomLabels.push(sprite);
+      }
+
+      async function initializeThree() {
+        try {
+          const THREE = await import('https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js');
+          const { OrbitControls } = await import('https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/controls/OrbitControls.js');
+          three = THREE;
+          scene3d = new THREE.Scene();
+          scene3d.background = new THREE.Color('#e8ebe3');
+          scene3d.fog = new THREE.Fog('#e8ebe3', 18, 38);
+          camera = new THREE.PerspectiveCamera(36, 1, .1, 100);
+          camera.position.set(12.5, 10.5, 14);
+          initialCamera = { position: camera.position.clone(), target: new THREE.Vector3(0, 1.1, 0) };
+          renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+          renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, CLASSROOM_MODE?1.5:2));
+          renderer.shadowMap.enabled = true;
+          renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+          renderer.outputColorSpace = THREE.SRGBColorSpace;
+          renderer.toneMapping = THREE.ACESFilmicToneMapping;
+          renderer.toneMappingExposure = 1.15;
+          scene.appendChild(renderer.domElement);
+          controls = new OrbitControls(camera, renderer.domElement);
+          controls.target.copy(initialCamera.target);
+          controls.enableDamping = true;
+          controls.dampingFactor = .075;
+          controls.maxPolarAngle = Math.PI * .495;
+          controls.enablePan=true;controls.enableZoom=true;controls.minAzimuthAngle=-Infinity;controls.maxAzimuthAngle=Infinity;
+          controls.minDistance = 6;
+          controls.maxDistance = 30;
+
+          scene3d.add(new THREE.HemisphereLight('#fff8e9', '#80927e', 2.0));
+          const sun = new THREE.DirectionalLight('#fff2d6', 3.1);
+          sun.position.set(-5, 11, 8);
+          sun.castShadow = true;
+          sun.shadow.mapSize.set(2048, 2048);
+          sun.shadow.camera.left = -12; sun.shadow.camera.right = 12; sun.shadow.camera.top = 12; sun.shadow.camera.bottom = -12;
+          scene3d.add(sun);
+
+          const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshStandardMaterial({ color: '#dce1d7', roughness: 1 }));
+          ground.rotation.x = -Math.PI / 2;
+          ground.position.y = -.12;
+          ground.receiveShadow = true;
+          scene3d.add(ground);
+
+          const grid = new THREE.GridHelper(28, 28, '#aeb8aa', '#d2d8cd');
+          grid.position.y = -.105;
+          grid.material.transparent = true;
+          grid.material.opacity = .46;
+          scene3d.add(grid);
+
+          buildHouse(THREE);
+          controls.update();
+          resizeRenderer();
+          const observer = new ResizeObserver(resizeRenderer);
+          observer.observe(scene);
+          renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene3d, camera); });
+          loading.hidden = true;
+          planController.syncTrace();
+        } catch (error) {
+          console.error(error);
+          loading.innerHTML = '<span>3Dライブラリを読み込めませんでした</span><span style="font-size:10px">インターネット接続を確認して再読み込みしてください</span>';
+          $('#statusText').textContent = '3Dライブラリの読み込みに失敗';
+          notify('3D表示にはThree.jsの読み込みが必要です。ネットワーク接続をご確認ください。', true);
+        }
+      }
+
+      function buildHouse(THREE) {
+        house = new THREE.Group();
+        scene3d.add(house);
+        wallMaterials = [];
+        roomLabels = [];
+        const width = 10;
+        const depth = 7.2;
+        const height = Number($('#wallHeight').value);
+        const thickness = .16;
+        wallMaterial = new THREE.MeshStandardMaterial({ color: $('#wallColor').value, roughness: .88 });
+        windowMaterial = new THREE.MeshPhysicalMaterial({ color: '#a8c6ce', roughness: .2, metalness: .05, transparent: true, opacity: .7, side: THREE.DoubleSide });
+        const foundationMaterial = new THREE.MeshStandardMaterial({ color: '#b7b9ac', roughness: .92 });
+
+        const foundation = new THREE.Mesh(new THREE.BoxGeometry(width + .35, .22, depth + .35), foundationMaterial);
+        foundation.position.y = -.02;
+        foundation.receiveShadow = true;
+        foundation.castShadow = true;
+        house.add(foundation);
+
+        const roomFloors = [
+          { x: -2.35, z: 1.42, w: 5.3, d: 4.02, color: '#d8cbb5' },
+          { x: 2.7, z: 1.42, w: 4.7, d: 4.02, color: '#d4d8c9' },
+          { x: -3.55, z: -2.18, w: 2.9, d: 2.7, color: '#d3d9d3' },
+          { x: -.3, z: -2.18, w: 3.6, d: 2.7, color: '#ded5c7' },
+          { x: 3.35, z: -2.18, w: 3.2, d: 2.7, color: '#d2d8d3' },
+        ];
+        for (const room of roomFloors) {
+          const floor = new THREE.Mesh(new THREE.BoxGeometry(room.w, .045, room.d), new THREE.MeshStandardMaterial({ color: room.color, roughness: .92 }));
+          floor.position.set(room.x, .1, room.z);
+          floor.receiveShadow = true;
+          house.add(floor);
+        }
+
+        makeWall(THREE, house, 'x', -depth / 2, -width / 2, width / 2, height, thickness, [{ start: -3.85, end: -2.85, kind: 'window', bottom: .78, top: 2.05 }, { start: 2.55, end: 4.25, kind: 'window', bottom: .78, top: 2.05 }]);
+        makeWall(THREE, house, 'x', depth / 2, -width / 2, width / 2, height, thickness, [{ start: -.62, end: .58, kind: 'door' }, { start: -4.25, end: -2.35, kind: 'window', bottom: .78, top: 2.05 }]);
+        makeWall(THREE, house, 'z', -width / 2, -depth / 2, depth / 2, height, thickness, [{ start: -1.2, end: .55, kind: 'window', bottom: .78, top: 2.05 }]);
+        makeWall(THREE, house, 'z', width / 2, -depth / 2, depth / 2, height, thickness, [{ start: -.8, end: .8, kind: 'window', bottom: .78, top: 2.05 }]);
+
+        makeWall(THREE, house, 'x', -.05, -width / 2, width / 2, height, thickness, [{ start: -1.1, end: .05, kind: 'door' }, { start: 3.05, end: 4.1, kind: 'door' }]);
+        makeWall(THREE, house, 'z', -2.02, -width / 2, -.4, height, thickness, [{ start: -4.3, end: -3.25, kind: 'door' }]);
+        makeWall(THREE, house, 'z', -2.02, .38, width / 2, height, thickness, [{ start: 2.1, end: 3.15, kind: 'door' }]);
+        makeWall(THREE, house, 'x', 2.7, -depth / 2, -2.02, height, thickness, [{ start: 1.85, end: 3.4, kind: 'door' }]);
+
+        const partition = new THREE.Mesh(new THREE.BoxGeometry(2.6, .9, .06), new THREE.MeshStandardMaterial({ color: '#f0eee3', roughness: .9 }));
+        partition.position.set(-2.2, .55, 1.85);
+        partition.castShadow = true;
+        house.add(partition);
+
+        const roofColor = $('#roofColor').value;
+        const roofType = $('#roofType').value;
+        roofMaterial = new THREE.MeshStandardMaterial({ color: roofColor, roughness: .73, side: THREE.DoubleSide });
+        const roof = new THREE.Group();
+        roof.name = 'roof';
+        roof.userData.roofType = roofType;
+        scene.dataset.roofType = roofType;
+        const pitch = Number($('#roofPitch').value) * Math.PI / 180;
+        const eave = Number($('#eaveDepth').value) / 10;
+        const roofWidth = width + eave * 2;
+        const roofDepth = depth + eave * 2;
+        const halfWidth = roofWidth / 2;
+        const halfDepth = roofDepth / 2;
+        const x1 = -halfWidth; const x2 = halfWidth;
+        const z1 = -halfDepth; const z2 = halfDepth;
+        const roofRise = Math.tan(pitch) * Math.min(halfWidth, halfDepth);
+        const roofMaterialForTrim = new THREE.MeshStandardMaterial({ color: roofColor, roughness: .8 });
+
+        if (roofType === 'gable') {
+          const ridgeY = height + Math.tan(pitch) * halfWidth;
+          addRoofSurface(THREE, roof, roofMaterial, [
+            [[x1, height, z1], [0, ridgeY, z1], [0, ridgeY, z2]],
+            [[x1, height, z1], [0, ridgeY, z2], [x1, height, z2]],
+            [[0, ridgeY, z1], [x2, height, z1], [x2, height, z2]],
+            [[0, ridgeY, z1], [x2, height, z2], [0, ridgeY, z2]],
+          ]);
+        } else if (roofType === 'hip') {
+          const ridgeY = height + roofRise;
+          if (roofWidth >= roofDepth) {
+            const ridgeLeft = [-halfWidth + halfDepth, ridgeY, 0];
+            const ridgeRight = [halfWidth - halfDepth, ridgeY, 0];
+            addRoofSurface(THREE, roof, roofMaterial, [
+              [[x1, height, z1], [x2, height, z1], ridgeRight],
+              [[x1, height, z1], ridgeRight, ridgeLeft],
+              [[x1, height, z2], [x2, height, z2], ridgeRight],
+              [[x1, height, z2], ridgeRight, ridgeLeft],
+              [[x1, height, z1], ridgeLeft, [x1, height, z2]],
+              [[x2, height, z1], ridgeRight, [x2, height, z2]],
+            ]);
+          } else {
+            const ridgeNear = [0, ridgeY, -halfDepth + halfWidth];
+            const ridgeFar = [0, ridgeY, halfDepth - halfWidth];
+            addRoofSurface(THREE, roof, roofMaterial, [
+              [[x1, height, z1], [x1, height, z2], ridgeFar],
+              [[x1, height, z1], ridgeFar, ridgeNear],
+              [[x2, height, z1], [x2, height, z2], ridgeFar],
+              [[x2, height, z1], ridgeFar, ridgeNear],
+              [[x1, height, z1], ridgeNear, [x2, height, z1]],
+              [[x1, height, z2], ridgeFar, [x2, height, z2]],
+            ]);
+          }
+        } else if (roofType === 'shed') {
+          const highY = height + Math.tan(pitch) * roofDepth;
+          addRoofSurface(THREE, roof, roofMaterial, [
+            [[x1, height, z1], [x2, height, z1], [x2, highY, z2]],
+            [[x1, height, z1], [x2, highY, z2], [x1, highY, z2]],
+          ]);
+        } else {
+          const slab = new THREE.Mesh(new THREE.BoxGeometry(roofWidth, .18, roofDepth), roofMaterial);
+          slab.position.y = height + .09;
+          slab.castShadow = true;
+          slab.receiveShadow = true;
+          roof.add(slab);
+          const parapetHeight = .34;
+          const parapetThickness = .15;
+          for (const z of [z1, z2]) {
+            const parapet = new THREE.Mesh(new THREE.BoxGeometry(roofWidth, parapetHeight, parapetThickness), roofMaterialForTrim);
+            parapet.position.set(0, height + .18 + parapetHeight / 2, z);
+            roof.add(parapet);
+          }
+          for (const x of [x1, x2]) {
+            const parapet = new THREE.Mesh(new THREE.BoxGeometry(parapetThickness, parapetHeight, roofDepth), roofMaterialForTrim);
+            parapet.position.set(x, height + .18 + parapetHeight / 2, 0);
+            roof.add(parapet);
+          }
+        }
+
+        if (roofType !== 'flat') {
+          for (const z of [z1, z2]) {
+            const fascia = new THREE.Mesh(new THREE.BoxGeometry(roofWidth, .13, .11), roofMaterialForTrim);
+            fascia.position.set(0, height - .04, z);
+            fascia.castShadow = true;
+            roof.add(fascia);
+          }
+        }
+        house.add(roof);
+
+        addLabel(THREE, house, 'リビング', [-2.7, .17, 1.55]);
+        addLabel(THREE, house, 'ダイニング', [2.65, .17, 1.55]);
+        addLabel(THREE, house, '寝室', [-3.25, .17, -2.4]);
+        addLabel(THREE, house, 'キッチン', [1.35, .17, -2.4]);
+        addLabel(THREE, house, '洋室', [3.3, .17, -2.4]);
+      }
+
+      function addRoofSurface(THREE, parent, material, triangles) {
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(triangles.flat(2), 3));
+        geometry.computeVertexNormals();
+        const surface = new THREE.Mesh(geometry, material);
+        surface.castShadow = true;
+        surface.receiveShadow = true;
+        parent.add(surface);
+      }
+
+      function updateRoofPreview() {
+        const type = $('#roofType').value;
+        const color = $('#roofColor').value;
+        const previews = {
+          gable: '<path d="M30 43 75 18l45 25v32H30V43Z" fill="#d5ded2" stroke="#839486" stroke-width="1.5"/><path d="m22 43 53-30 53 30-7 5-46-26-46 26-7-5Z" fill="ROOF" stroke="#a65f3f" stroke-width="1.5" stroke-linejoin="round"/><path d="M74 23v49M42 54h20v21H42zM86 54h20v21H86z" stroke="#839486" stroke-width="1.5"/>',
+          hip: '<path d="M30 42h90v33H30z" fill="#d5ded2" stroke="#839486" stroke-width="1.5"/><path d="m22 42 38-25h30l38 25-8 4-45-4-45 4-8-4Z" fill="ROOF" stroke="#a65f3f" stroke-width="1.5" stroke-linejoin="round"/><path d="m22 42 53 4 53-4M60 17l15 29 15-29" stroke="#a65f3f" stroke-width="1.3"/>',
+          shed: '<path d="M30 39 120 22v53H30V39Z" fill="#d5ded2" stroke="#839486" stroke-width="1.5"/><path d="m22 36 106-20v9L22 45v-9Z" fill="ROOF" stroke="#a65f3f" stroke-width="1.5" stroke-linejoin="round"/><path d="M47 48v27M99 38v37" stroke="#839486" stroke-width="1.5"/>',
+          flat: '<path d="M30 37h90v38H30z" fill="#d5ded2" stroke="#839486" stroke-width="1.5"/><path d="M24 28h102v12H24z" fill="ROOF" stroke="#a65f3f" stroke-width="1.5"/><path d="M38 52h24v23H38zM88 52h24v23H88z" stroke="#839486" stroke-width="1.5"/>',
+        };
+        const labels = { gable: '切妻屋根', hip: '寄棟屋根', shed: '片流れ屋根', flat: '陸屋根（屋上タイプ）' };
+        $('#roofPreviewSvg').innerHTML = previews[type].replaceAll('ROOF', color);
+        $('#roofPreviewLabel').textContent = `${labels[type]}を表示中`;
+        $('.roof-preview').setAttribute('aria-label', `${labels[type]}のプレビュー`);
+      }
+
+      function resizeRenderer() {
+        if (!renderer || !camera) return;
+        const width = scene.clientWidth;
+        const height = scene.clientHeight;
+        if (!width || !height) return;
+        renderer.setSize(width, height, false);
+        camera.aspect = width / height;
+        camera.fov = width < 480 ? 48 : width < 900 ? 42 : 36;
+        camera.updateProjectionMatrix();
+      }
+
+      function rebuildHouse() {
+        if (planController.isPlanMode) return;
+        if (!three || !house) return;
+        const old = house;
+        const roofVisible = old.getObjectByName('roof')?.visible ?? true;
+        const labelsVisible = roomLabels.every((label) => label.visible);
+        scene3d.remove(old);
+        old.traverse((object) => {
+          if (object.geometry) object.geometry.dispose();
+          if (object.material) (Array.isArray(object.material) ? object.material : [object.material]).forEach((material) => material.dispose());
+        });
+        buildHouse(three);
+        house.getObjectByName('roof').visible = roofVisible;
+        roomLabels.forEach((label) => { label.visible = labelsVisible; });
+      }
+
+      $('#roofToggle').addEventListener('click', () => {
+        const visible = $('#roofToggle').getAttribute('aria-pressed') !== 'true';
+        $('#roofToggle').setAttribute('aria-pressed', String(visible));
+        const roof = house?.getObjectByName('roof');
+        if (roof) roof.visible = visible;
+      });
+      $('#labelsToggle').addEventListener('click', () => {
+        const visible = $('#labelsToggle').getAttribute('aria-pressed') !== 'true';
+        $('#labelsToggle').setAttribute('aria-pressed', String(visible));
+        roomLabels.forEach((label) => { label.visible = visible; });
+        $('#labelSwitch').checked = visible;
+        planController.setLabelsVisible(visible);
+      });
+      $('#labelSwitch').addEventListener('change', (event) => {
+        roomLabels.forEach((label) => { label.visible = event.target.checked; });
+        $('#labelsToggle').setAttribute('aria-pressed', String(event.target.checked));
+        planController.setLabelsVisible(event.target.checked);
+      });
+      $('#shadowSwitch').addEventListener('change', (event) => { if (renderer) renderer.shadowMap.enabled = event.target.checked; });
+      $('#wallHeight').addEventListener('change', rebuildHouse);
+      $('#roofType').addEventListener('change', () => { updateRoofPreview(); rebuildHouse(); });
+      $('#roofPitch').addEventListener('input', (event) => { $('#pitchOutput').value = `${event.target.value}°`; rebuildHouse(); });
+      $('#eaveDepth').addEventListener('input', (event) => { $('#eaveOutput').value = `${(Number(event.target.value) / 10).toFixed(1)} m`; rebuildHouse(); });
+      $('#roofColor').addEventListener('input', (event) => { $('#roofColorValue').textContent = event.target.value; updateRoofPreview(); rebuildHouse(); });
+      $('#wallColor').addEventListener('input', (event) => { $('#wallColorValue').textContent = event.target.value; rebuildHouse(); });
+      $('#resetView').addEventListener('click', () => {
+        if (planController.resetView()) return;
+        if (!camera || !controls) return;
+        camera.position.copy(initialCamera.position);
+        controls.target.copy(initialCamera.target);
+        controls.update();
+      });
+      $('#topView').addEventListener('click', () => {
+        if (planController.resetView(true)) return;
+        if (!camera || !controls) return;
+        camera.position.set(0, 17, .01);
+        controls.target.set(0, 0, 0);
+        controls.update();
+      });
+
+      $('#generateButton').addEventListener('click', () => notify(planController.isPlanMode
+        ? 'JSON住宅は「JSONを検査して生成」、手動入力の壁は縮尺と壁の入力パネルで更新できます。画像の自動解析は未対応です。'
+        : 'サンプル住宅を表示しています。画像からの自動生成は未対応です。間取りJSONからの生成は左のパネルで試せます。'));
+      $('#saveButton').addEventListener('click', () => {
+        const project = {
+          app: 'AI House 3D Creator', version: 1, savedAt: new Date().toISOString(),
+          floorPlans: currentFile ? [{ name: currentFile.name, floor: null, floorStatus: 'unclassified' }] : [],
+          model: { sample: true, roof: $('#roofType').value, roofColor: $('#roofColor').value, roofPitch: Number($('#roofPitch').value), eaveDepth: Number($('#eaveDepth').value) / 10, wallHeight: Number($('#wallHeight').value), wallColor: $('#wallColor').value, showRoof: $('#roofToggle').getAttribute('aria-pressed') === 'true', showLabels: $('#labelSwitch').checked, showShadows: $('#shadowSwitch').checked },
+          note: '平面図ファイル本体は保存されません。Phase 2以降でプロジェクト形式を拡張します。',
+        };
+        const url = URL.createObjectURL(new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' }));
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = 'ai-house-project.json';
+        anchor.click();
+        URL.revokeObjectURL(url);
+        notify('プロジェクト設定をJSONで保存しました。');
+      });
+
+      updateRoofPreview();
+      initializeThree();
+    </script>
+  <noscript>JavaScriptを有効にしてください。</noscript></body>
+</html>

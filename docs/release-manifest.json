@@ -1,0 +1,130 @@
+{
+  ".nojekyll": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "index.html": {
+    "bytes": 74135,
+    "sha256": "3f87bae5d3227d42908c307479fd54a0e82c2b79aa351bf526f696323645ac80"
+  },
+  "samples/two-room-house.v1.json": {
+    "bytes": 4054,
+    "sha256": "18b1c06147e2e7ad8347f7300e6496af264a252358a40b8f6fe58103f635fe98"
+  },
+  "src/ai/analysis.mjs": {
+    "bytes": 6314,
+    "sha256": "d67ca5ad122f501f5ef2833bd1f1b360d1c251b979a0c89e7552c0940b92a652"
+  },
+  "src/ai/controller.mjs": {
+    "bytes": 13482,
+    "sha256": "6a6be33322f5528b52c1fc2e9e5476080cb12ccda7c0681153793f30d6704fa4"
+  },
+  "src/ai/regions.mjs": {
+    "bytes": 1242,
+    "sha256": "3156d58a468d1635d86592e874acbb7a932b753028214ea6dbfc7f9ad0f44ea0"
+  },
+  "src/building/classify.mjs": {
+    "bytes": 1207,
+    "sha256": "be722667f8e23ae90bd22499c4f232dbc85ad9fdb4b662ffcb6cc6fdfcad0f69"
+  },
+  "src/building/controller.mjs": {
+    "bytes": 9283,
+    "sha256": "4dabc7e7c5c67f8bf59e3975cf487654ec28825424e285010b1eb767bc561d95"
+  },
+  "src/building/layout.mjs": {
+    "bytes": 8817,
+    "sha256": "5a6e7ca3772b03a174e952b7af2741d13e9ab7e1de7730b98325c47aceb3158a"
+  },
+  "src/building/openings.mjs": {
+    "bytes": 4212,
+    "sha256": "04da90abb217e67923262547c0fffe21bcda4ca320f9358f2c1bbe6493f44d5a"
+  },
+  "src/building/stair-controller.mjs": {
+    "bytes": 7883,
+    "sha256": "d0f2d6ffcacba2514ddc267523dde644db2f3243dc8356c021318746bf8ef47f"
+  },
+  "src/building/stair-placement.mjs": {
+    "bytes": 1927,
+    "sha256": "f0596e0d9bd1a07a882fe7a455991232740c1955bd837bdc007e0fa955427636"
+  },
+  "src/building/stairs.mjs": {
+    "bytes": 4304,
+    "sha256": "d1cf43e2b91fe7241adca569c84d76d162b3eb301dc80aee21adff24eb8651c3"
+  },
+  "src/building/views.mjs": {
+    "bytes": 716,
+    "sha256": "a96ba1ad20fbc57e9d2ec4047f1413cedefa015d828a7fbe2dbcf202cd62db7d"
+  },
+  "src/building/window-controller.mjs": {
+    "bytes": 10026,
+    "sha256": "9f40998308c6b635919c30a76b8fb4b00374f3997cd7bcd88d91b3d9c2f523dd"
+  },
+  "src/config.mjs": {
+    "bytes": 34,
+    "sha256": "53102ff27a5c7e2ca0fdd864e062d75cab67b6c4a663a79953b3e11aac65d71b"
+  },
+  "src/plan/controller.mjs": {
+    "bytes": 10532,
+    "sha256": "a52f25eb805ab1377724a836faa277461a000763d565d67a21c6cc3cdcdf6cf5"
+  },
+  "src/plan/layout.mjs": {
+    "bytes": 4665,
+    "sha256": "256df90f285c89df7e220805f8b46212756167bf7e0f5190165ab3e2a4ab4707"
+  },
+  "src/plan/render.mjs": {
+    "bytes": 3799,
+    "sha256": "21e08b21c6cc335ba31a31943d6571f02a50f9fa69896f708b3db7a8bf09baae"
+  },
+  "src/plan/schema.mjs": {
+    "bytes": 2879,
+    "sha256": "d59cb6c85577af3f01eba9017552396bc8ad3f4bcb06962dec6e9b1c444191da"
+  },
+  "src/plan/validate.mjs": {
+    "bytes": 9065,
+    "sha256": "ffda43dda298cc791c3b6285e2d9837a115af0008e5bb6c3865ec6b5f174f063"
+  },
+  "src/trace/controller.mjs": {
+    "bytes": 32466,
+    "sha256": "1e4fb19d7ad7077a31c8fa19077ebf338175edee2b3bc5191dbd732a9401af25"
+  },
+  "src/trace/data.mjs": {
+    "bytes": 6833,
+    "sha256": "4a33202bccb0cabce8ab8a47cc08449a50f76fa35886759da14157af9c3da4cb"
+  },
+  "src/trace/editor.mjs": {
+    "bytes": 11171,
+    "sha256": "7bec6c425a66ae02bbed4db23af1c86347f83e8f396f5998e69a1ebf7e01b9a3"
+  },
+  "src/trace/history.mjs": {
+    "bytes": 512,
+    "sha256": "9cabbf2057de156614347c5b92726a5fbb477e69a75509c42549ce3b2918d1fe"
+  },
+  "src/trace/input.mjs": {
+    "bytes": 1275,
+    "sha256": "07e02b448162f9632fb2dba11ce791093ec753ad7a87c842767c25f4ecd24f60"
+  },
+  "src/trace/persistence.mjs": {
+    "bytes": 7146,
+    "sha256": "39d438f1415cbd96500870222053d1399ae603a11eefc4911130e22e047cc716"
+  },
+  "src/trace/project.mjs": {
+    "bytes": 14180,
+    "sha256": "6db4a1219399b23caf44ea3034da502148858e600745970fb2843b4a24b4d64f"
+  },
+  "src/trace/shapes.mjs": {
+    "bytes": 6072,
+    "sha256": "292adf09c3f989d7350bf82edb934cedaaea95a50f6fd3c2a92f245365e244fa"
+  },
+  "src/trace/trace.css": {
+    "bytes": 2783,
+    "sha256": "651fb7a9e915d1b5516b7f3cb78606c0aaaf7464e999d99fbaf661f3520c8d00"
+  },
+  "src/trace/workspaces.mjs": {
+    "bytes": 1151,
+    "sha256": "28ee731830644cc3b2699b2c52b9130e354ada4fd61cdb971b1de2be3ba6f8c7"
+  },
+  "student-guide.html": {
+    "bytes": 3377,
+    "sha256": "b71e2ac1a8b171a53c8ee6dfceab5a4a7500a0a6e41c15ac1c98df1ee6db8139"
+  }
+}

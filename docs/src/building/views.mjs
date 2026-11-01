@@ -1,0 +1,3 @@
+export const VIEW_DIRECTIONS={front:[0,0,1],back:[0,0,-1],left:[-1,0,0],right:[1,0,0],top:[0,1,.0001],perspective:[.75,.65,.85]};
+// Model output is centred at X/Z=0 and rests at Y=0, independent of input origin.
+export function cameraPose(bounds,view='perspective',fov=42,aspect=1){if(!VIEW_DIRECTIONS[view])throw new Error('不明な視点です。');const size=bounds.max.map((n,i)=>n-bounds.min[i]);const half=Math.min(fov*Math.PI/360,Math.atan(Math.tan(fov*Math.PI/360)*Math.max(.01,aspect)));const distance=Math.max(6,Math.hypot(...size)/2/Math.sin(half)*1.15),target=[0,size[1]/2,0],d=VIEW_DIRECTIONS[view],length=Math.hypot(...d);return {target,position:target.map((n,i)=>n+d[i]/length*distance),distance};}
