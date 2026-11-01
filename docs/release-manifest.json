@@ -4,8 +4,8 @@
     "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
   },
   "index.html": {
-    "bytes": 74415,
-    "sha256": "98427ac6c6dd61b0d026843b1594ed7e35531ebdf188101b21739030f034e13b"
+    "bytes": 75088,
+    "sha256": "81914f409f5d84c26c2688f356fccc1cb3971b5b25d4bae8ad8439a27cadc221"
   },
   "samples/two-room-house.v1.json": {
     "bytes": 4054,
@@ -32,16 +32,16 @@
     "sha256": "4dabc7e7c5c67f8bf59e3975cf487654ec28825424e285010b1eb767bc561d95"
   },
   "src/building/image-export.mjs": {
-    "bytes": 6638,
-    "sha256": "c8496d43be399b2cf2f4ac35199e87f082fd6ef1821abece92e8793efd35789b"
+    "bytes": 7573,
+    "sha256": "fc6844ffecab991c06e1d23cad5a96413a12a809e9c84cb33e74dfa481bc9971"
   },
   "src/building/layout.mjs": {
     "bytes": 8817,
     "sha256": "5a6e7ca3772b03a174e952b7af2741d13e9ab7e1de7730b98325c47aceb3158a"
   },
   "src/building/openings.mjs": {
-    "bytes": 4212,
-    "sha256": "04da90abb217e67923262547c0fffe21bcda4ca320f9358f2c1bbe6493f44d5a"
+    "bytes": 5285,
+    "sha256": "caa16950b2f4a551689e4cd98c77807b1fad35c9ddaaed0d09bc1e08620f6624"
   },
   "src/building/stair-controller.mjs": {
     "bytes": 7883,
@@ -60,16 +60,16 @@
     "sha256": "a96ba1ad20fbc57e9d2ec4047f1413cedefa015d828a7fbe2dbcf202cd62db7d"
   },
   "src/building/window-controller.mjs": {
-    "bytes": 10026,
-    "sha256": "9f40998308c6b635919c30a76b8fb4b00374f3997cd7bcd88d91b3d9c2f523dd"
+    "bytes": 10139,
+    "sha256": "72cb2df25dada54565940773b2d7c3a6155f7cb70188841b69a72c4dd618c236"
   },
   "src/config.mjs": {
     "bytes": 34,
     "sha256": "53102ff27a5c7e2ca0fdd864e062d75cab67b6c4a663a79953b3e11aac65d71b"
   },
   "src/plan/controller.mjs": {
-    "bytes": 10680,
-    "sha256": "5a40bcfc5975196e8726516fb309c9a846c1b1d98401f87cc202175b33220c12"
+    "bytes": 10931,
+    "sha256": "142c8e5812234fc02325e4c60c0cd41ac3890b78f4ebbcc2ef56feb58b5f2174"
   },
   "src/plan/layout.mjs": {
     "bytes": 4665,
@@ -128,7 +128,7 @@
     "sha256": "28ee731830644cc3b2699b2c52b9130e354ada4fd61cdb971b1de2be3ba6f8c7"
   },
   "student-guide.html": {
-    "bytes": 3852,
-    "sha256": "6df3b7d1db1df3e71a06e3978cc91da6de2877fe5ed3a21138a63aa4301c015c"
+    "bytes": 3877,
+    "sha256": "c903fd8c99b6f64068d81903dd0aedc19d62c9a9adb103c3a0335f80bad0ee27"
   }
 }

@@ -78,21 +78,25 @@ export async function renderHousePng(runtime, { size = 'full', transparent = fal
   }
 }
 
-export function mountImageExport(host, getRuntime) {
-  host.innerHTML = `<details><summary>3D作品を画像に保存</summary>
+export function mountImageExport(host, getRuntime, scene) {
+  host.innerHTML = `<dialog id="imageDialog" aria-labelledby="imageDialogTitle" style="width:min(420px,calc(100vw - 48px));max-height:80vh;overflow:auto;border:1px solid #cbd5cb;border-radius:12px;padding:22px;background:#fff;color:#26352e"><h2 id="imageDialogTitle">3D作品を画像に保存</h2>
     <p class="hint">好きな角度・表示階にしてから保存します。操作ボタン・部屋名・補助線は写りません。屋根を含めるときは閲覧モードへ戻してください。</p>
     <label for="imageSize">画像サイズ</label><select id="imageSize"><option value="full">高画質 1920 × 1080</option><option value="light">軽量 1280 × 720</option><option value="small">小さめ 960 × 540</option></select>
     <label><input type="checkbox" id="imageTransparent"> 背景を透明にする（標準は白）</label>
     <button class="button" id="saveHouseImage" type="button">3D画像を保存</button>
-    <p class="hint" id="imageStatus" role="status" aria-live="polite">PNGはこのブラウザ内で作成します。編集を再開するには作業JSONも保存してください。</p></details>`;
-  const button = host.querySelector('#saveHouseImage'), status = host.querySelector('#imageStatus');
+    <p class="hint" id="imageStatus" role="status" aria-live="polite">PNGはこのブラウザ内で作成します。編集を再開するには作業JSONも保存してください。</p><button type="button" id="closeImageDialog">閉じる</button></dialog>`;
+  const dialog=host.querySelector('dialog');scene.append(dialog);host.remove();
+  const launch=document.createElement('button');launch.type='button';launch.id='openImageDialog';launch.textContent='📷 3D画像を保存';launch.style.cssText='position:absolute;right:16px;bottom:76px;z-index:6;padding:10px 14px;background:#fff;border:1px solid #647a69;border-radius:8px;color:#234c39;font-weight:600;box-shadow:0 2px 6px #0002';scene.append(launch);
+  launch.onclick=()=>{scene.dispatchEvent(new Event('house-view-change'));if(!dialog.open)dialog.showModal();};
+  dialog.querySelector('#closeImageDialog').onclick=()=>dialog.close();
+  const button = dialog.querySelector('#saveHouseImage'), status = dialog.querySelector('#imageStatus');
   button.addEventListener('click', async () => {
     if (button.disabled) return;
     button.disabled = true;
     status.textContent = 'PNG画像を作成しています…';
     try {
-      const size = host.querySelector('#imageSize').value;
-      const blob = await renderHousePng(getRuntime(), { size, transparent: host.querySelector('#imageTransparent').checked });
+      const size = dialog.querySelector('#imageSize').value;
+      const blob = await renderHousePng(getRuntime(), { size, transparent: dialog.querySelector('#imageTransparent').checked });
       const url = URL.createObjectURL(blob), link = document.createElement('a');
       link.href = url; link.download = `ai-house-3d-${Date.now()}.png`;
       document.body.append(link); link.click(); link.remove();

@@ -238,7 +238,7 @@
           </div>
 
           <div class="workspace" id="workspace">
-            <div id="scene" aria-label="回転・拡大縮小できるサンプル住宅の3Dビュー"><p id="traceDisplayStatus" role="status" style="position:absolute;top:12px;left:16px;right:16px;z-index:1;pointer-events:none;white-space:pre-line;background:#ffffffe6;border-radius:6px;padding:8px" hidden></p></div>
+            <div id="scene" aria-label="回転・拡大縮小できるサンプル住宅の3Dビュー"><div id="traceDisplayStatus" style="position:absolute;top:72px;left:16px;max-width:calc(100% - 32px);z-index:5;background:#ffffffe6;border-radius:6px;padding:6px;font-size:12px" hidden><span id="traceStatusSummary" role="status"></span><details id="traceWarnings" hidden><summary id="traceWarningCount"></summary><div id="traceWarningDetails" style="max-height:160px;overflow:auto;max-width:420px;white-space:pre-line"></div></details></div></div>
             <div class="scene-label"><strong>Garden House / 01</strong><span>サンプルモデル ・ 平屋</span></div>
             <div class="scene-loading" id="sceneLoading"><span class="spinner"></span><span>3Dモデルを読み込み中</span></div>
             <div class="preview" id="preview" aria-label="アップロードした平面図"><div class="preview-empty" id="previewEmpty">左のパネルから平面図を選ぶと、ここにプレビューを表示します。</div><img id="imagePreview" alt="アップロードした平面図" draggable="false" hidden /><canvas id="pdfCanvas" hidden></canvas></div>
@@ -355,7 +355,7 @@
           ? { THREE: three, legacy: house, scene: scene3d, camera, controls, renderer } : null,
         showModelTab: () => $('#modelTab').click(),
         getTraceName: () => traceController?.getDisplayName()||'全体・手動作業',
-        onTraceStatus: text => {$('#traceDisplayStatus').textContent=text;$('#traceDisplayStatus').hidden=!text;},
+        onTraceStatus: (text,{warnings=[],error=false}={}) => {$('#traceDisplayStatus').hidden=!text;$('#traceStatusSummary').textContent=text;$('#traceStatusSummary').style.color=error?'#a32720':'';$('#traceStatusSummary').setAttribute('role',error?'alert':'status');$('#traceWarnings').hidden=error||!warnings.length;$('#traceWarningCount').textContent=`注意事項 ${warnings.length}件（参考情報）`;$('#traceWarningDetails').textContent=warnings.map(w=>w.message||String(w)).join('\n');if(!warnings.length)$('#traceWarnings').open=false;},
         onModeChange: (mode) => {
           const title = modelTitle(mode);
           $('#modelStepNote').textContent = `${title}を表示中`;
@@ -383,7 +383,7 @@
       const windowHost=document.createElement('section');windowHost.className='side-section';$('.sidebar-right').prepend(windowHost);mountWindowControls(windowHost,{trace:traceController,plan:planController,scene,showModelTab:()=>$('#modelTab').click()});
       const sampleDetails=document.createElement('details');sampleDetails.innerHTML='<summary>サンプル住宅専用・表示の詳細</summary>';for(const section of [...$('.sidebar-right').children])if(section!==buildingHost&&section!==windowHost)sampleDetails.append(section);$('.sidebar-right').append(sampleDetails);const stairHost=document.createElement('section');stairHost.className='side-section';sampleDetails.before(stairHost);mountStairControls(stairHost,traceController);
       const devDetails=document.createElement('details');devDetails.innerHTML='<summary>詳細：サンプル・間取りJSONの検証</summary>';$('#planControls').before(devDetails);devDetails.append($('#planControls'));
-      const imageHost=document.createElement('section');imageHost.className='side-section';$('.sidebar-right').prepend(imageHost);mountImageExport(imageHost,()=>planController.getImageRuntime());
+      const imageHost=document.createElement('section');imageHost.className='side-section';$('.sidebar-right').prepend(imageHost);mountImageExport(imageHost,()=>planController.getImageRuntime(),scene);
       $('#saveButton').hidden=true;$('#generateButton').hidden=true;$('.floor-row').closest('section').hidden=true;
       traceController.subscribe(()=>{if(planController.mode==='trace'){const title=modelTitle();$('.scene-label strong').textContent=title;if(!preview.classList.contains('visible'))$('#projectTitle').textContent=title;}});
 

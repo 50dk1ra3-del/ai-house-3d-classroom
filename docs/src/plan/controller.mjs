@@ -21,7 +21,7 @@ export function mountPlanControls(host, { getRuntime, onModeChange, showModelTab
   let currentView='perspective';
   let followTrace=false,pendingTrace=null,traceIssue='',mode='sample', model=null, layout=null, traceModel=null, traceLayout=null, legacyView=null;
   const legacyControls = ['roofType','roofPitch','eaveDepth','roofColor','wallHeight','wallColor','roofToggle','saveButton'];
-  function report(text) { result.textContent=text;onTraceStatus(mode==='trace'||followTrace?text:''); }
+  function report(text) { result.textContent=text;const active=mode==='trace'||followTrace;const success=active&&!traceIssue&&traceLayout?.valid;onTraceStatus(active?(success?`${getTraceName()}：${traceLayout.boxes.length+(traceLayout.surfaces?.length||0)}部材を表示`:text):'',{warnings:success?(traceLayout.warnings||[]):[],error:!!traceIssue}); }
   function runtime() {
     const r=getRuntime();
     if(!r)report('3D表示の準備ができていません。読み込み完了後に再試行してください。');
