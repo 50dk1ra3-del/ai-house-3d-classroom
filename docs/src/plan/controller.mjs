@@ -116,6 +116,7 @@ export function mountPlanControls(host, { getRuntime, onModeChange, showModelTab
   return {get isPlanMode(){return mode!=='sample';}, get mode(){return mode;}, setLabelsVisible, setTraceLayout,
     syncTrace(){if(followTrace&&pendingTrace){const ok=setTraceLayout(pendingTrace.next,false,true);const r=getRuntime();if(ok&&r)frame(r);return ok;}return false;},
     getTraceEditor(){const r=getRuntime();return mode==='trace'&&r&&traceModel?{...r,model:traceModel,layout:traceLayout}:null;},
+    getImageRuntime(){const r=getRuntime();return r?{...r,modelGroup:mode==='sample'?r.legacy:mode==='json'?model?.group:traceModel?.group}:null;},
     subscribeTrace(fn){traceListeners.add(fn);return ()=>traceListeners.delete(fn);},
     get traceIssue(){return traceIssue;},
     resetView(top=false){if(mode==='sample')return false;if(mode==='trace'&&!traceModel){report(traceIssue||'この階には表示できる壁がありません。');return true;}const r=runtime();if(r)frame(r,top);return true;}};

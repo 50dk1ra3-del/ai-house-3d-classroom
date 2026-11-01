@@ -300,6 +300,7 @@
     </script>
     <script type="module">
       import { CLASSROOM_MODE } from './src/config.mjs';
+      import { mountImageExport } from './src/building/image-export.mjs';
       import { mountStairControls } from './src/building/stair-controller.mjs';
       import { mountWindowControls } from './src/building/window-controller.mjs';
       import { mountBuildingControls } from './src/building/controller.mjs';
@@ -351,7 +352,7 @@
       let aiController = null, traceController = null;
       const planController = mountPlanControls($('#planControls'), {
         getRuntime: () => three && house && renderer && camera && controls
-          ? { THREE: three, legacy: house, scene: scene3d, camera, controls } : null,
+          ? { THREE: three, legacy: house, scene: scene3d, camera, controls, renderer } : null,
         showModelTab: () => $('#modelTab').click(),
         getTraceName: () => traceController?.getDisplayName()||'全体・手動作業',
         onTraceStatus: text => {$('#traceDisplayStatus').textContent=text;$('#traceDisplayStatus').hidden=!text;},
@@ -382,6 +383,7 @@
       const windowHost=document.createElement('section');windowHost.className='side-section';$('.sidebar-right').prepend(windowHost);mountWindowControls(windowHost,{trace:traceController,plan:planController,scene,showModelTab:()=>$('#modelTab').click()});
       const sampleDetails=document.createElement('details');sampleDetails.innerHTML='<summary>サンプル住宅専用・表示の詳細</summary>';for(const section of [...$('.sidebar-right').children])if(section!==buildingHost&&section!==windowHost)sampleDetails.append(section);$('.sidebar-right').append(sampleDetails);const stairHost=document.createElement('section');stairHost.className='side-section';sampleDetails.before(stairHost);mountStairControls(stairHost,traceController);
       const devDetails=document.createElement('details');devDetails.innerHTML='<summary>詳細：サンプル・間取りJSONの検証</summary>';$('#planControls').before(devDetails);devDetails.append($('#planControls'));
+      const imageHost=document.createElement('section');imageHost.className='side-section';$('.sidebar-right').prepend(imageHost);mountImageExport(imageHost,()=>planController.getImageRuntime());
       $('#saveButton').hidden=true;$('#generateButton').hidden=true;$('.floor-row').closest('section').hidden=true;
       traceController.subscribe(()=>{if(planController.mode==='trace'){const title=modelTitle();$('.scene-label strong').textContent=title;if(!preview.classList.contains('visible'))$('#projectTitle').textContent=title;}});
 

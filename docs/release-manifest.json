@@ -4,8 +4,8 @@
     "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
   },
   "index.html": {
-    "bytes": 74135,
-    "sha256": "3f87bae5d3227d42908c307479fd54a0e82c2b79aa351bf526f696323645ac80"
+    "bytes": 74415,
+    "sha256": "98427ac6c6dd61b0d026843b1594ed7e35531ebdf188101b21739030f034e13b"
   },
   "samples/two-room-house.v1.json": {
     "bytes": 4054,
@@ -30,6 +30,10 @@
   "src/building/controller.mjs": {
     "bytes": 9283,
     "sha256": "4dabc7e7c5c67f8bf59e3975cf487654ec28825424e285010b1eb767bc561d95"
+  },
+  "src/building/image-export.mjs": {
+    "bytes": 6638,
+    "sha256": "c8496d43be399b2cf2f4ac35199e87f082fd6ef1821abece92e8793efd35789b"
   },
   "src/building/layout.mjs": {
     "bytes": 8817,
@@ -64,8 +68,8 @@
     "sha256": "53102ff27a5c7e2ca0fdd864e062d75cab67b6c4a663a79953b3e11aac65d71b"
   },
   "src/plan/controller.mjs": {
-    "bytes": 10532,
-    "sha256": "a52f25eb805ab1377724a836faa277461a000763d565d67a21c6cc3cdcdf6cf5"
+    "bytes": 10680,
+    "sha256": "5a40bcfc5975196e8726516fb309c9a846c1b1d98401f87cc202175b33220c12"
   },
   "src/plan/layout.mjs": {
     "bytes": 4665,
@@ -124,7 +128,7 @@
     "sha256": "28ee731830644cc3b2699b2c52b9130e354ada4fd61cdb971b1de2be3ba6f8c7"
   },
   "student-guide.html": {
-    "bytes": 3377,
-    "sha256": "b71e2ac1a8b171a53c8ee6dfceab5a4a7500a0a6e41c15ac1c98df1ee6db8139"
+    "bytes": 3852,
+    "sha256": "6df3b7d1db1df3e71a06e3978cc91da6de2877fe5ed3a21138a63aa4301c015c"
   }
 }
